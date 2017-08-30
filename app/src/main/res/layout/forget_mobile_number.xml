@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    >
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scaleType="fitCenter"
+        android:src="@drawable/forget"
+        android:id="@+id/iv"
+        />
+    <LinearLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@id/iv"
+        android:id="@+id/ll"
+        >
+
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="41dp"
+            android:dropDownWidth="200dp"
+
+            />
+
+        <EditText
+            android:id="@+id/phone"
+            android:layout_height="41dp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:inputType="phone"
+            android:paddingLeft="10dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/llForget"
+        android:layout_below="@id/ll"
+        android:layout_margin="10dp"
+        >
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:layout_weight="1"
+            android:background="@drawable/selector_cancel"
+            android:layout_marginRight="1dp"
+            android:layout_margin="5dp"
+            android:id="@+id/btnCancel"
+            android:textColor="#FFFFFF"
+            />
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="OK"
+            android:layout_weight="1"
+            android:background="@drawable/selector_ok"
+            android:layout_margin="5dp"
+            android:layout_marginTop="1dp"
+            android:id="@+id/btnOk"
+            android:textColor="#FFFFFF"
+
+
+            />
+    </LinearLayout>
+
+</RelativeLayout>
