@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coLayout"
@@ -18,76 +18,84 @@
         android:tag="appBar"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
+        <android.support.design.widget.CollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:tag="toolBar"
+            android:layout_height="match_parent"
+            app:contentScrim="?attr/colorPrimary"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-            >
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                android:tag="toolBar"
+                app:layout_scrollFlags="enterAlways"
+                >
 
-            <RelativeLayout
-                android:id="@+id/rlReg"
-                android:layout_width="fill_parent"
-                android:layout_height="match_parent"
-                android:tag="rl">
+                <RelativeLayout
+                    android:id="@+id/rlReg"
+                    android:layout_width="fill_parent"
+                    android:layout_height="match_parent"
+                    android:tag="rl">
 
-                <TextView
-                    android:id="@+id/tvRegNewUser"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_margin="10dp"
-                    android:text="Register"
-                    android:textAllCaps="true"
-                    android:textColor="#FFFFFF"
-                    android:textSize="15sp" />
+                    <TextView
+                        android:id="@+id/tvRegNewUser"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_margin="10dp"
+                        android:text="Register"
+                        android:textAllCaps="true"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15sp" />
 
-                <ImageView
-                    android:id="@+id/closeDrawerLayout"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:onClick="closeDrawerLayout"
-                    android:rotation="180"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/back_arrow"
-                    android:tag="close drawer" />
+                    <ImageView
+                        android:id="@+id/closeDrawerLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:onClick="closeDrawerLayout"
+                        android:rotation="180"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/back_arrow"
+                        android:tag="close drawer" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="20dp"
-                    android:layout_toRightOf="@id/closeDrawerLayout"
-                    android:padding="5dp"
-                    android:text="New User"
-                    android:textColor="#FFFFFF"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-            </RelativeLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginLeft="20dp"
+                        android:layout_toRightOf="@id/closeDrawerLayout"
+                        android:padding="5dp"
+                        android:text="New User"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+                </RelativeLayout>
 
-        </android.support.v7.widget.Toolbar>
-
+            </android.support.v7.widget.Toolbar>
+        </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 
 
     <ScrollView
+        android:id="@+id/svReg"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/svReg"
+        android:layout_below="@id/appBarLayout"
+
         >
 
         <LinearLayout
+            android:id="@+id/llReg"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="right"
-            android:orientation="vertical"
-            android:id="@+id/llReg"
-            >
+            android:orientation="vertical">
 
             <EditText
                 android:id="@+id/etRegEmail"
@@ -95,7 +103,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
-                android:layout_marginTop="80dp"
+                android:layout_marginTop="10dp"
                 android:hint="Email"
                 android:inputType="textEmailAddress"
                 android:padding="10dp"
@@ -130,9 +138,7 @@
                 android:inputType="textVisiblePassword"
                 android:padding="10dp"
                 android:textColor="#FFFFFF"
-                android:textColorHint="#FFFFFF"
-
-                />
+                android:textColorHint="#FFFFFF" />
 
             <EditText
                 android:id="@+id/etRegName"
@@ -142,49 +148,50 @@
                 android:layout_marginRight="10dp"
                 android:layout_marginTop="10dp"
                 android:hint="Name"
-                android:inputType="textPersonName"
+                android:inputType="textPersonName|textCapWords"
                 android:padding="10dp"
                 android:textColor="#FFFFFF"
                 android:textColorHint="#FFFFFF" />
 
-           <LinearLayout
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               android:orientation="horizontal"
-               android:id="@+id/llNotRobot"
-               android:gravity="center_vertical"
-               android:layout_marginLeft="10dp"
-               android:layout_marginRight="10dp"
-               android:layout_marginTop="10dp"
+            <LinearLayout
+                android:id="@+id/llNotRobot"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
 
-               >
-               <ImageView
-                   android:layout_width="100dp"
-                   android:layout_height="50dp"
-                   android:scaleType="fitXY"
-                   android:src="@drawable/cap1"
-                   android:id="@+id/ivCaptcha"
+                >
 
-                   />
-               <EditText
-                   android:id="@+id/etRegWordsShown"
-                   android:layout_width="0dp"
-                   android:layout_weight="1"
-                   android:layout_height="wrap_content"
-                   android:hint="Enter the words shown"
-                   android:inputType="text|textAutoComplete|textAutoCorrect"
-                   android:padding="10dp"
-                   android:textColor="#FFFFFF"
-                   android:textColorHint="#FFFFFF" />
-           </LinearLayout>
+                <ImageView
+                    android:id="@+id/ivCaptcha"
+                    android:layout_width="70dp"
+                    android:layout_height="30dp"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/cap1"
+
+                    />
+
+                <EditText
+                    android:id="@+id/etRegWordsShown"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Enter the words shown"
+                    android:inputType="text|textAutoComplete|textAutoCorrect"
+                    android:padding="10dp"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#FFFFFF" />
+            </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/llGender"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:id="@+id/llGender"
                 android:gravity="center_vertical"
-                >
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -197,54 +204,53 @@
                     android:textStyle="bold" />
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:layout_marginLeft="40dp"
-                    android:orientation="horizontal"
                     android:id="@+id/llMale"
-                    android:gravity="center_vertical"
-                    >
-                    <Button
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:background="@drawable/btn_drawable"
-                        android:id="@+id/btnMale"
-                        />
-                    <TextView
-                        android:layout_marginLeft="2dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Male"
-                        android:textStyle="bold|italic"
-                        android:textSize="25sp"
-                        android:textColor="#DAD"
-                        />
-                </LinearLayout>
-                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
                     android:layout_marginLeft="40dp"
-                    android:orientation="horizontal"
-                    android:id="@+id/llFemale"
                     android:gravity="center_vertical"
-                    >
+                    android:orientation="horizontal">
+
                     <Button
+                        android:id="@+id/btnMale"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:background="@drawable/btn_drawable"
-                        android:id="@+id/btnFemale"
-                        />
+                        android:background="@drawable/btn_drawable" />
+
                     <TextView
-                        android:layout_marginLeft="2dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Female"
-                        android:textStyle="bold|italic"
-                        android:textSize="25sp"
+                        android:layout_marginLeft="2dp"
+                        android:text="Male"
                         android:textColor="#DAD"
-                        />
+                        android:textSize="15sp"
+                        android:textStyle="bold|italic" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/llFemale"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="40dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnFemale"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:background="@drawable/btn_drawable" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="2dp"
+                        android:text="Female"
+                        android:textColor="#DAD"
+                        android:textSize="15sp"
+                        android:textStyle="bold|italic" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -256,11 +262,10 @@
                 android:background="@android:color/darker_gray" />
 
             <LinearLayout
+                android:id="@+id/llPhoto"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:id="@+id/llPhoto"
-                >
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -279,7 +284,7 @@
                     android:layout_gravity="center"
                     android:layout_marginLeft="20dp"
                     android:onClick="uploadPhoto"
-                    android:scaleType="centerCrop"
+                    android:scaleType="centerInside"
                     android:src="@drawable/add_image" />
             </LinearLayout>
 
@@ -291,12 +296,11 @@
                 android:background="@android:color/darker_gray" />
 
             <LinearLayout
+                android:id="@+id/llDOB"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:id="@+id/llDOB"
                 android:background="@drawable/selector_dob"
-                >
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -320,6 +324,7 @@
 
                     />
             </LinearLayout>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
@@ -353,5 +358,5 @@
         app:backgroundTint="@color/colorPrimary"
         app:srcCompat="@android:drawable/ic_dialog_email" />
 
-</LinearLayout>
+</RelativeLayout>
 

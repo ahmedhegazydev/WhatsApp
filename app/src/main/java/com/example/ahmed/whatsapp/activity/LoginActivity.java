@@ -51,10 +51,12 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.ahmed.whatsapp.R;
 //impoimport com.google.android.gms.common.ConnectionResult;
 import com.example.ahmed.whatsapp.adapters.CountryAdapter;
@@ -80,10 +82,17 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.example.ahmed.whatsapp.model.User;
+import com.soundcloud.android.crop.Crop;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
+
 import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
@@ -98,7 +107,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Random;
 import java.util.TreeSet;
 import java.util.concurrent.Executor;
 
@@ -118,10 +129,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected static final TreeSet<String> DO_CODES = new TreeSet<String>();
     protected static final TreeSet<String> PR_CODES = new TreeSet<String>();
     final static String KEY_NEW_ = "KEY_NEW_";
+    final static String logged = "";
+    private static final String LOADING_IMAGE_URL = "https://www.google.com/images/spin-32.gif";
     final static String KEY_NEW_USER = "KEY_NEW_USER";
     final static int KEY_MODE = Context.MODE_PRIVATE;
     static final int REQUEST_IMAGE_CAPTURE = 200;
     private static final int SELECT_PHOTO = 100;
+    public static final String USERS_CHILD = "users";
     private static Uri selectedImage;
     private static InputStream imageStream;
     private static String mCurrentPhotoPath;
@@ -454,6 +468,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         CANADA_CODES.add("905");
     }
 
+    int[] arrCapDrawabales = new int[]{R.drawable.cap1, R.drawable.cap2, R.drawable.cap3};
+    String[] arrCapWords = new String[]{"RBSKW", "TSMS9", "3M56R"};
+    HashMap<Integer, String> hmCapConnection = new HashMap<Integer, String>();
+
     protected SparseArray<ArrayList<Country>> mCountriesMap = new SparseArray<ArrayList<Country>>();
     protected PhoneNumberUtil mPhoneNumberUtil = PhoneNumberUtil.getInstance();
     protected String mLastEnteredPhone;
@@ -728,6 +746,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         sharedPreferences = getSharedPreferences(KEY_NEW_USER, KEY_MODE);
         editor = sharedPreferences.edit();
 
+
+        if (sharedPreferences.contains(logged)) {
+            if (sharedPreferences.getBoolean(logged, false) == true) {
+                finish();
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            }
+        }
+
         // Initialize Firebase Auth
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
@@ -748,6 +774,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     editor.commit();
                 }
             }, 5000);
+        }
+
+
+        //concat the cap drawables with their strings
+        for (int counter = 0; counter < arrCapDrawabales.length; counter++) {
+            hmCapConnection.put(arrCapDrawabales[counter], arrCapWords[counter]);
         }
 
 
@@ -785,6 +817,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         etEmail = (EditText) view.findViewById(R.id.etRegEmail);
         etPassword = (EditText) view.findViewById(R.id.etRegPassword);
         etConfirmPassword = (EditText) view.findViewById(R.id.etRegConfPass);
+        etName = (EditText) view.findViewById(R.id.etRegName);
 
         ivCaptcha = (ImageView) view.findViewById(R.id.llNotRobot).findViewById(R.id.ivCaptcha);
         etShownWords = (EditText) view.findViewById(R.id.llNotRobot).findViewById(R.id.etRegWordsShown);
@@ -847,12 +880,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         View view2 = headerView//co
                 .findViewById(R.id.appBarLayout)
                 .findViewById(R.id.toolbar)
-                .findViewById(R.id.rlReg)
-                .findViewById(R.id.closeDrawerLayout);
+                .findViewById(R.id.rlReg);
 //        Toast.makeText(getApplicationContext(), view.getTag().toString()
 //                , Toast.LENGTH_SHORT).show();
-        view2.setOnClickListener(this);
-
+        view2.findViewById(R.id.closeDrawerLayout).setOnClickListener(this);
+        view2.findViewById(R.id.tvRegNewUser).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                registerNewUser(v);
+            }
+        });
     }
 
     public void genderCanotBeChanged() {
@@ -890,8 +927,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         builder = new AlertDialog.Builder(this);
         builder.setView(view);
         alertDialog = builder.create();
-        alertDialog.setCancelable(false);
-        alertDialog.setCanceledOnTouchOutside(false);
+        alertDialog.setCancelable(true);
+        alertDialog.setCanceledOnTouchOutside(true);
         if (!alertDialog.isShowing())
             alertDialog.show();
 
@@ -914,34 +951,98 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void fromGallery() {
-        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-        photoPickerIntent.setType("image/*");
-        startActivityForResult(Intent.createChooser(photoPickerIntent, "Set avatar"), SELECT_PHOTO);
+//        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+//        photoPickerIntent.setType("image/*");
+//        startActivityForResult(Intent.createChooser(photoPickerIntent, "Set avatar"), SELECT_PHOTO);
+
+//        Intent photoPickerIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+//        photoPickerIntent.addCategory(Intent.CATEGORY_OPENABLE);
+//        photoPickerIntent.setType("image/*");
+//        startActivityForResult(Intent.createChooser(photoPickerIntent, "Set avatar"), SELECT_PHOTO);
+
+
+        //Crop.pickImage(this, SELECT_PHOTO);
+        //Crop.pickImage(this);
+        CropImage.activity(null)
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .start(this);
+
     }
 
     public void fireToast(String msg) {
         Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
+
+    Crop crop = null;
+
+    //Uri uriDestination = Uri.fromFile(new File(getCacheDir(), "cropped"));
+    private void beginCrop(Uri source) {
+        Uri destination = Uri.fromFile(new File(getCacheDir(), "cropped"));
+        Crop.of(source, destination).asSquare().start(this);
+    }
+
+    private void handleCrop(int resultCode, Intent result) {
+        if (resultCode == RESULT_OK) {
+            ivUploadImage.setImageURI(Crop.getOutput(result));
+
+//            try {
+//                imageStream = getContentResolver().openInputStream(result.getData());
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            }
+//            mImageBitmap = BitmapFactory.decodeStream(imageStream);
+//            ivUploadImage.setImageBitmap(mImageBitmap);
+            fireToast("set");
+        } else if (resultCode == Crop.RESULT_ERROR) {
+            fireToast(Crop.getError(result).getMessage());
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        // handle result of CropImageActivity
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                ivUploadImage.setImageURI(result.getUri());
+                try {
+                    imageStream = getContentResolver().openInputStream(result.getUri());
+                    mImageBitmap = BitmapFactory.decodeStream(imageStream);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                //alertDialog.dismiss();
+                //Toast.makeText(this, "Cropping successful, Sample: " + result.getSampleSize(), Toast.LENGTH_LONG).show();
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Toast.makeText(this, "Cropping failed: " + result.getError(), Toast.LENGTH_LONG).show();
+            }
+        }
+
+//        if (requestCode == Crop.REQUEST_PICK && resultCode == RESULT_OK) {
+//            beginCrop(data.getData());
+//        } else if (requestCode == Crop.REQUEST_CROP) {
+//            handleCrop(resultCode, data);
+//            alertDialog.dismiss();
+//        }
         switch (requestCode) {
             case SELECT_PHOTO:
                 if (resultCode == RESULT_OK) {
-                    try {
-                        selectedImage = data.getData();
-                        imageStream = getContentResolver().openInputStream(selectedImage);
-                        mImageBitmap = BitmapFactory.decodeStream(imageStream);
-                        ivUploadImage.setImageBitmap(mImageBitmap);
-                    } catch (FileNotFoundException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } finally {
-                        if (alertDialog.isShowing())
-                            alertDialog.dismiss();
-                    }
+//                    try {
+//                        selectedImage = data.getData();
+//                        Crop.of(selectedImage, uriDestination).asSquare().start(this);
+//                        imageStream = getContentResolver().openInputStream(uriDestination);
+//                        mImageBitmap = BitmapFactory.decodeStream(imageStream);
+//                        ivUploadImage.setImageBitmap(mImageBitmap);
+//                    } catch (FileNotFoundException e) {
+//                        // TODO Auto-generated catch block
+//                        e.printStackTrace();
+//                    } finally {
+//                        if (alertDialog.isShowing())
+//                            alertDialog.dismiss();
+//                    }
 //                    ivPersonalIamge.setVisibility(View.VISIBLE);
 //                    ivPersonalIamge.invalidate();
                 }
@@ -1001,6 +1102,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 //        rbFemale.setChecked(false);
     }
 
+    int randomCounter = arrCapDrawabales[0];//bu default
+    String capIvString = "";
+
     public void valiAndVeri() {
         if (TextUtils.isEmpty(etEmail.getText().toString())) {
             Toast.makeText(getApplicationContext(), "Please, Enter email", Toast.LENGTH_SHORT).show();
@@ -1032,7 +1136,25 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             Toast.makeText(getApplicationContext(), "Please, Enter name", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (!rbFemale.isChecked() && !rbMale.isChecked()) {
+        if (TextUtils.isEmpty(etShownWords.getText().toString().trim())) {
+            fireToast("Please, Enter the shown words, For checking u aren't Robto");
+            etShownWords.requestFocus();
+            return;
+        } else {
+            String txtForMatching = etShownWords.getText().toString();
+            capIvString = hmCapConnection.get(randomCounter);
+            if (!TextUtils.equals(txtForMatching, capIvString)) {
+                etShownWords.requestFocus();
+                Random random = new Random();
+                int r = random.nextInt(arrCapDrawabales.length - 1);//0 -> 2
+                randomCounter = arrCapDrawabales[r];
+                Glide.with(getApplicationContext()).load(randomCounter).into(ivCaptcha);
+                fireToast("Don't match, please try again");
+                return;
+            }
+            //Glide
+        }
+        if (strGender == "") {
             Toast.makeText(getApplicationContext(), "Please select your gender", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -1047,78 +1169,226 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             return;
         }
 
-    }
+        if (isInternetAvailable()) {
+            fireToast("No internet connection !!!!");
+            Snackbar.make(findViewById(R.id.mainContainer), "No internet connection", Snackbar.LENGTH_SHORT);
+            return;
+        }
 
-    public void registerNewUser(View view) {
-        //Toast.makeText(getApplicationContext(), "Register", Toast.LENGTH_SHORT).show();
 
-
-        //valiAndVeri();
-//        if (!isInternetAvailable()) {
-//            fireToast("No internet connection !!!!");
-//            return;
-//        }
+        progressRegister = fireProgressDialog(this, "Please wait ....", "Saving data ...");
+        progressRegister.show();
 
         //ok let's go
-//        String email = etEmail.getText().toString().trim(), password = etPassword.getText().toString().trim();
-//        mFirebaseAuth.createUserWithEmailAndPassword(email, password)
-//                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-//                    @Override
-//                    public void onComplete(@NonNull Task<AuthResult> task) {
-//                        if (task.isSuccessful()) {
-//                            // Sign in success, update UI with the signed-in user's information
-//                            mFirebaseUser = mFirebaseAuth.getCurrentUser();
-//                            fireToast("Registered Successfully, U can login now");
-//                        } else {
-//                            // If sign in fails, display a message to the user.
-//                            fireToast("Authentication failed." + task.getException());
-//
-//                        }
-//                    }
-//                });
+        email = etEmail.getText().toString().trim();
+        password = etPassword.getText().toString().trim();
+        mFirebaseAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            mFirebaseUser = mFirebaseAuth.getCurrentUser();
+                            fireToast("Registered Successfully, U can login now");
+                            alertDialog.dismiss();
+                            etUserEmail.setText(mFirebaseAuth.getCurrentUser().getEmail().toString());
+                            verifyEmail();
 
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            fireToast("Authentication failed." + task.getException());
+                        }
+                    }
+                });
 
+        //fireToast("hi");
         saveInDatabase();
+    }
+
+    ImageView ivCorretctVerified = null;
+    Button btnProccessCompleted = null;
+    TextView tvVerifiy = null;
+
+    public void verifyEmail() {
+        //after getting the current registered user
+        mFirebaseAuth.getCurrentUser().sendEmailVerification().addOnCompleteListener(this, new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isComplete()) {
+                    fireToast("Email sent");
+                    showVerificationAlert();//check if the user has open his email
+                } else {
+                    fireToast("Email doesn't have been sent !!!!!");
+                }
+            }
+        });
+
+    }
+
+    public void showVerificationAlert() {
+        //show the view of verification
+
+        final View view = LayoutInflater.from(this).inflate(R.layout.view_verification, null);
+
+        builder = new AlertDialog.Builder(this);
+        builder.setView(view);
+        alertDialog = builder.create();
+
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.slide_from_right);
+        view.startAnimation(animation);
+
+        alertDialog.setCancelable(true);
+        alertDialog.setCanceledOnTouchOutside(true);
+        if (!alertDialog.isShowing()) {
+            alertDialog.show();
+        }
+
+        btnProccessCompleted = (Button) view.findViewById(R.id.verBtn);
+        ivCorretctVerified = (ImageView) view.findViewById(R.id.verIvCorrect);
+        tvVerifiy = (TextView) view.findViewById(R.id.verTv);
+        btnProccessCompleted.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mFirebaseAuth.getCurrentUser().isEmailVerified()) {
+                    Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.abc_slide_out_bottom);
+                    Animation animation1 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.abc_slide_out_top);
+                    Animation animation2 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.scale_up);
+
+                    ((RelativeLayout) view).removeView(btnProccessCompleted);
+                    ((RelativeLayout) view).removeView(tvVerifiy);
+                    btnProccessCompleted.startAnimation(animation);
+                    tvVerifiy.startAnimation(animation1);
+
+                    ivCorretctVerified.setVisibility(ImageView.VISIBLE);
+                    ivCorretctVerified.startAnimation(animation2);
+
+                    animation2.setAnimationListener(new Animation.AnimationListener() {
+                        @Override
+                        public void onAnimationStart(Animation animation) {
+
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            alertDialog.dismiss();
+                            if (drawerLayout.isDrawerOpen(Gravity.RIGHT)) {
+                                drawerLayout.closeDrawer(Gravity.RIGHT);
+                            }
+                            etUserPassword.requestFocus();
+
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animation animation) {
+
+                        }
+                    });
+
+                } else {
+
+                }
+            }
+        });
 
 
     }
-    FirebaseDatabase firebaseDatabase = null;
-    DatabaseReference firebaseDatabaseRef = null;
+
+    ProgressDialog progressRegister = null;
+    String email = "", password = "";
+
+    public void registerNewUser(View view) {
+
+        //Toast.makeText(getApplicationContext(), "Register", Toast.LENGTH_SHORT).show();
+
+        valiAndVeri();
+
+    }
+
+    private DatabaseReference mDatabase;
+
     private void saveInDatabase() {
         //init
         //firebaseDatabase = FirebaseDatabase.getInstance();
         // It automatically stores the data offline when there is no internet connection. When the device connects to internet,
         // all the data will be pushed to realtime database.
         //to enable Firebase's offline mode before any database references are used
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         //firebaseDatabase.setPersistenceEnabled(true);
-        //In order to perform any operation on to database whether it can be read or write, you need to get the reference to database first
-        //firebaseDatabaseRef = firebaseDatabase.getReference();
+        //In order to perform any operation on to database whether it can be read or write,
+        // you need to get the reference to database first
+        //firebaseDatabaseRef = firebaseDatabase.getReference("USERS_CHILD");
         ///////////////////////////////
         //processing
 
-//        String userId = firebaseDatabaseRef.push().getKey();
-//        User user = new User();
-//        firebaseDatabaseRef.child(userId).setValue(user).addOnCompleteListener(this, new OnCompleteListener<Void>() {
-//            @Override
-//            public void onComplete(@NonNull Task<Void> task) {
-//                fireToast("inserted");
-//            }
-//        });
+        User user = new User(etEmail.getText().toString(),
+                etPassword.getText().toString(),
+                etName.getText().toString(),
+                strGender,
+                tvBirthday.getText().toString());
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();//the root  /
+        mDatabase.child(this.USERS_CHILD)
+                .push() //The push() method adds an automatically generated ID to the pushed object's path.
+                .setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isComplete()) {
+                    fireToast("Saved");
+                } else {
+                    fireToast("Data no saved");
+                }
 
 
-        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.push().setValue(1);
-        //This will append the new value at the end of the list.
-        //By combining the push() and child() methods, you can create multiple lists of children in the database:
-        mDatabase.child("numbers").push().setValue(1);
-        mDatabase.child("numbers").push().setValue(53);
-        mDatabase.child("numbers").push().setValue(42);
+            }
+        });
 
-        mDatabase.child("letters").push().setValue("a");
-        mDatabase.child("letters").push().setValue("z");
-        mDatabase.child("letters").push().setValue("c");
+//        mDatabase.child(this.USERS_CHILD)
+//                .push() //The push() method adds an automatically generated ID to the pushed object's path.
+//                .setValue(user, new DatabaseReference.CompletionListener() {
+//                    @Override
+//                    public void onComplete(DatabaseError databaseError,
+//                                           DatabaseReference databaseReference) {
+//                        if (databaseError == null) {
+//                            String key = databaseReference.getKey();
+//                            StorageReference storageReference =
+//                                    FirebaseStorage.getInstance()
+//                                            .getReference(mFirebaseUser.getUid())
+//                                            .child(key)
+//                                            .child(selectedImage.getLastPathSegment());
+//                            putImageInStorage(storageReference, selectedImage, key);
+//                            //------------------
+//                            fireToast("Registered successfully");
+//                            progressRegister.dismiss();
+////                        finish();
+////                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+////                        startActivity(intent);
+//                        } else {
+//                            fireToast("Unable to write message to database." +
+//                                    databaseError.toException());
+//                        }
+//                    }
+//                });
+
 
     }
+
+
+    private void putImageInStorage(StorageReference storageReference, Uri uri, final String key) {
+        storageReference.putFile(uri).addOnCompleteListener(this, new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                if (task.isSuccessful()) {
+                    User user = new User(task.getResult().getMetadata().getDownloadUrl().toString());
+                    mDatabase.child(USERS_CHILD).child(key)
+                            .setValue(user);
+                } else {
+//                            Log.w(TAG, "Image upload task was not successful.",
+//                                    task.getException());
+                }
+            }
+        });
+    }
+
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -1176,11 +1446,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onResume() {
         super.onResume();
 
+
         // Check if user is signed in (non-null) and update UI accordingly.
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         if (mFirebaseUser != null) {
             etUserEmail.setText(mFirebaseUser.getEmail().toString());
         }
+
 
     }
 
@@ -1287,26 +1559,27 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         //otherwise
         //ok
-        mFirebaseAuth.sendPasswordResetEmail(email).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    fireToast("Email sent successfully, Go ! and reset it now ..");
-                } else {
-                    fireToast("Error, try again later");
-                }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
+//        mFirebaseAuth.sendPasswordResetEmail(email).addOnCompleteListener(new OnCompleteListener<Void>() {
+//            @Override
+//            public void onComplete(@NonNull Task<Void> task) {
+//                if (task.isSuccessful()) {
+//                    fireToast("Email sent successfully, Go ! and reset it now ..");
+//                } else {
+//                    fireToast("Error, try again later");
+//                }
+//            }
+//        }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//
+//            }
+//        }).addOnSuccessListener(new OnSuccessListener<Void>() {
+//            @Override
+//            public void onSuccess(Void aVoid) {
+//
+//            }
+//        });
 
-            }
-        }).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-
-            }
-        });
 
     }
 

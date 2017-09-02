@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#AAAA"
+    android:gravity="center"
+    >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Please, click the below button to complete the registration procsess"
+        android:textSize="25sp"
+        android:padding="20dp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:id="@+id/verTv"
+
+        />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ok, i checked the Sent email"
+        android:textStyle="bold"
+        android:background="@drawable/round_view"
+        android:padding="15dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="20dp"
+        android:id="@+id/verBtn"
+        android:layout_below="@id/verTv"
+        android:layout_centerHorizontal="true"
+
+        />
+    <ImageView
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:visibility="gone"
+        android:src="@drawable/correct"
+        android:layout_gravity="center"
+        android:layout_centerInParent="true"
+        android:id="@+id/verIvCorrect"
+
+        />
+
+
+
+</RelativeLayout>

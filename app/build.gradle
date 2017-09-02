@@ -69,6 +69,12 @@ dependencies {
     compile 'com.googlecode.libphonenumber:libphonenumber:6.2'
 
 
+    compile 'com.soundcloud.android:android-crop:1.0.1@aar'
+    compile 'com.theartofdev.edmodo:android-image-cropper:2.4.+'
+
+
+
+
 }
 
 
